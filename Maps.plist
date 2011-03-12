@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>title</key>
+		<string>Long Island Rail Road</string>
+		<key>image</key>
+		<string>lirr_map.png</string>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>Metro North Line</string>
+		<key>image</key>
+		<string>metro_north_map.png</string>
+	</dict>
+	<dict>
+		<key>title</key>
+		<string>New York City Subway</string>
+		<key>image</key>
+		<string>nyc_subway_map.png</string>
+	</dict>
+</array>
+</plist>
