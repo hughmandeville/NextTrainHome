@@ -21,7 +21,7 @@
 		3E18A44113290EB300134ACA /* MapsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E18A44013290EB300134ACA /* MapsView.m */; };
 		3E18A44413290ECA00134ACA /* RoutesView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E18A44313290ECA00134ACA /* RoutesView.m */; };
 		3E18A44C1329107B00134ACA /* Maps.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E18A44B1329107B00134ACA /* Maps.plist */; };
-		3E18A4761329128800134ACA /* WebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E18A4741329128800134ACA /* WebView.m */; };
+		3E18A4761329128800134ACA /* GenericWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E18A4741329128800134ACA /* GenericWebView.m */; };
 		3E18A4771329128800134ACA /* WebView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3E18A4751329128800134ACA /* WebView.xib */; };
 		3E55698613249EA30092228B /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E55698513249EA30092228B /* libsqlite3.0.dylib */; };
 		3E55698813249EAE0092228B /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E55698713249EAE0092228B /* CoreLocation.framework */; };
@@ -39,6 +39,9 @@
 		3E5569EB1324B4870092228B /* Settings.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E5569EA1324B4870092228B /* Settings.png */; };
 		3E556A8813266DE00092228B /* StopTimeCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E556A8713266DE00092228B /* StopTimeCellView.m */; };
 		3E556A8A13266F230092228B /* StopTimeCellView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3E556A8913266F230092228B /* StopTimeCellView.xib */; };
+		3EB766A4132BC37600605BE7 /* DataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EB766A3132BC37600605BE7 /* DataSource.m */; };
+		3EB766A8132BD0FB00605BE7 /* StopsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EB766A6132BD0FA00605BE7 /* StopsView.m */; };
+		3EB766A9132BD0FB00605BE7 /* StopsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3EB766A7132BD0FA00605BE7 /* StopsView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,8 +64,8 @@
 		3E18A44213290ECA00134ACA /* RoutesView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RoutesView.h; sourceTree = "<group>"; };
 		3E18A44313290ECA00134ACA /* RoutesView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RoutesView.m; sourceTree = "<group>"; };
 		3E18A44B1329107B00134ACA /* Maps.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Maps.plist; sourceTree = "<group>"; };
-		3E18A4731329128800134ACA /* WebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebView.h; sourceTree = "<group>"; };
-		3E18A4741329128800134ACA /* WebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebView.m; sourceTree = "<group>"; };
+		3E18A4731329128800134ACA /* GenericWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenericWebView.h; sourceTree = "<group>"; };
+		3E18A4741329128800134ACA /* GenericWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GenericWebView.m; sourceTree = "<group>"; };
 		3E18A4751329128800134ACA /* WebView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = WebView.xib; path = Classes/WebView.xib; sourceTree = "<group>"; };
 		3E55698513249EA30092228B /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		3E55698713249EAE0092228B /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -85,6 +88,11 @@
 		3E556A8613266DE00092228B /* StopTimeCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StopTimeCellView.h; sourceTree = "<group>"; };
 		3E556A8713266DE00092228B /* StopTimeCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StopTimeCellView.m; sourceTree = "<group>"; };
 		3E556A8913266F230092228B /* StopTimeCellView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StopTimeCellView.xib; sourceTree = "<group>"; };
+		3EB766A2132BC37600605BE7 /* DataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataSource.h; sourceTree = "<group>"; };
+		3EB766A3132BC37600605BE7 /* DataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataSource.m; sourceTree = "<group>"; };
+		3EB766A5132BD0FA00605BE7 /* StopsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StopsView.h; sourceTree = "<group>"; };
+		3EB766A6132BD0FA00605BE7 /* StopsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StopsView.m; sourceTree = "<group>"; };
+		3EB766A7132BD0FA00605BE7 /* StopsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = StopsView.xib; path = Classes/StopsView.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* NextTrainHome-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "NextTrainHome-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,6 +116,10 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				3EB766A2132BC37600605BE7 /* DataSource.h */,
+				3EB766A3132BC37600605BE7 /* DataSource.m */,
+				3E18A4731329128800134ACA /* GenericWebView.h */,
+				3E18A4741329128800134ACA /* GenericWebView.m */,
 				3E5569D21324AD0E0092228B /* GoHomeView.h */,
 				3E5569D31324AD0E0092228B /* GoHomeView.m */,
 				3E5569D71324AF490092228B /* GoToWorkView.h */,
@@ -120,10 +132,10 @@
 				3E18A44313290ECA00134ACA /* RoutesView.m */,
 				3E5569DA1324AF9E0092228B /* SettingsView.h */,
 				3E5569DB1324AF9E0092228B /* SettingsView.m */,
+				3EB766A5132BD0FA00605BE7 /* StopsView.h */,
+				3EB766A6132BD0FA00605BE7 /* StopsView.m */,
 				3E556A8613266DE00092228B /* StopTimeCellView.h */,
 				3E556A8713266DE00092228B /* StopTimeCellView.m */,
-				3E18A4731329128800134ACA /* WebView.h */,
-				3E18A4741329128800134ACA /* WebView.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -160,10 +172,10 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				3E5569DD1324B0C60092228B /* XIBs */,
 				3E5569D51324AE5D0092228B /* nexttrainhome.sqlite */,
-				3E55699013249ED40092228B /* PLists */,
 				3E55698F13249EC90092228B /* Images */,
+				3E55699013249ED40092228B /* PLists */,
+				3E5569DD1324B0C60092228B /* XIBs */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -184,18 +196,18 @@
 		3E55698F13249EC90092228B /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				3E18A43913290E1A00134ACA /* lirr_map.png */,
-				3E18A43A13290E1A00134ACA /* metro_north_map.png */,
-				3E18A43B13290E1A00134ACA /* nyc_subway_map.png */,
-				3E0362E11327ADBE00E5AFEF /* Maps.png */,
-				3E0362E21327ADBE00E5AFEF /* Routes.png */,
-				3E5569EA1324B4870092228B /* Settings.png */,
+				3E55699213249F3E0092228B /* Default.png */,
 				3E5569E41324B3D30092228B /* GoHome.png */,
 				3E5569E51324B3D30092228B /* GoToWork.png */,
-				3E55699213249F3E0092228B /* Default.png */,
 				3E55699313249F3E0092228B /* Icon.png */,
 				3E55699413249F3E0092228B /* iTunesArtwork */,
+				3E18A43913290E1A00134ACA /* lirr_map.png */,
+				3E0362E11327ADBE00E5AFEF /* Maps.png */,
+				3E18A43A13290E1A00134ACA /* metro_north_map.png */,
 				3E55699513249F3E0092228B /* NavBarImage.png */,
+				3E18A43B13290E1A00134ACA /* nyc_subway_map.png */,
+				3E0362E21327ADBE00E5AFEF /* Routes.png */,
+				3E5569EA1324B4870092228B /* Settings.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -215,6 +227,7 @@
 			children = (
 				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				3E556A8913266F230092228B /* StopTimeCellView.xib */,
+				3EB766A7132BD0FA00605BE7 /* StopsView.xib */,
 				3E18A4751329128800134ACA /* WebView.xib */,
 			);
 			name = XIBs;
@@ -286,6 +299,7 @@
 				3E18A43E13290E1A00134ACA /* nyc_subway_map.png in Resources */,
 				3E18A44C1329107B00134ACA /* Maps.plist in Resources */,
 				3E18A4771329128800134ACA /* WebView.xib in Resources */,
+				3EB766A9132BD0FB00605BE7 /* StopsView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,7 +318,9 @@
 				3E556A8813266DE00092228B /* StopTimeCellView.m in Sources */,
 				3E18A44113290EB300134ACA /* MapsView.m in Sources */,
 				3E18A44413290ECA00134ACA /* RoutesView.m in Sources */,
-				3E18A4761329128800134ACA /* WebView.m in Sources */,
+				3E18A4761329128800134ACA /* GenericWebView.m in Sources */,
+				3EB766A4132BC37600605BE7 /* DataSource.m in Sources */,
+				3EB766A8132BD0FB00605BE7 /* StopsView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
