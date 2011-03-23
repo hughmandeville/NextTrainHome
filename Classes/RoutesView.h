@@ -10,7 +10,8 @@
 
 
 @interface RoutesView : UITableViewController {
-
+    NSArray *routes;
+    
 }
 
 @end

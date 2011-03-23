@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface WebView : UIViewController {
+@interface GenericWebView : UIViewController {
 	IBOutlet UIWebView* webView;
 	NSString *url;
 	NSString *html;

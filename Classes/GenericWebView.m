@@ -6,10 +6,10 @@
 //  Copyright 2011 __MyCompanyName__. All rights reserved.
 //
 
-#import "WebView.h"
+#import "GenericWebView.h"
 
 
-@implementation WebView
+@implementation GenericWebView
 
 @synthesize webView;
 @synthesize url;
@@ -32,6 +32,7 @@
     [super viewDidLoad];
 
 	webView.scalesPageToFit = TRUE;
+    // XXX: zoom in on image.
 	NSString* path = [[NSBundle mainBundle] bundlePath];
 	NSURL *baseURL = [NSURL fileURLWithPath:path];
 	if ((html != nil) && (html.length > 0)) {

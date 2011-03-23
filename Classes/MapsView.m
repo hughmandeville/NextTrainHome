@@ -7,7 +7,7 @@
 //
 
 #import "MapsView.h"
-#import "WebView.h"
+#import "GenericWebView.h"
 
 @implementation MapsView
 
@@ -172,8 +172,8 @@
 	
 	NSDictionary *map = [self.maps objectAtIndex:indexPath.row];
 	
-	WebView* view;
-	view = [[WebView alloc] initWithNibName:@"WebView" bundle:nil];
+	GenericWebView* view;
+	view = [[GenericWebView alloc] initWithNibName:@"WebView" bundle:nil];
 	view.title = [map valueForKey:@"title"];
 	view.url = [map valueForKey:@"image"];
 	view.hidesBottomBarWhenPushed = YES;

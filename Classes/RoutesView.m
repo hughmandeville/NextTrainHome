@@ -7,7 +7,8 @@
 //
 
 #import "RoutesView.h"
-
+#import "StopsView.h"
+#import "DataSource.h"
 
 @implementation RoutesView
 
@@ -42,6 +43,11 @@
     UIImageView *imageView = [[UIImageView alloc] initWithImage: image];	
     self.navigationItem.titleView = imageView;
     [imageView release];
+    
+    
+    DataSource *dataSource = [DataSource sharedInstance];
+    
+	routes = [[dataSource getRoutes] retain];
 
 }
 
@@ -86,7 +92,8 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    return 10;
+    NSLog(@"routes count %d", [routes count]);
+    return [routes count];
 }
 
 
@@ -101,7 +108,8 @@
     }
     
     // Configure the cell...
-    cell.textLabel.text = @"route name";
+    NSDictionary *route = [routes objectAtIndex:indexPath.row];
+    cell.textLabel.text = [route objectForKey:@"route_long_name"];
     return cell;
 }
 
@@ -150,14 +158,22 @@
 #pragma mark Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Navigation logic may go here. Create and push another view controller.
-    /*
-    <#DetailViewController#> *detailViewController = [[<#DetailViewController#> alloc] initWithNibName:@"<#Nib name#>" bundle:nil];
-     // ...
-     // Pass the selected object to the new view controller.
-    [self.navigationController pushViewController:detailViewController animated:YES];
-    [detailViewController release];
-    */
+    // Navigation logic may go here. Create and push another view controller.    
+    NSDictionary *route = [routes objectAtIndex:indexPath.row];
+	
+    
+	StopsView* view;
+	view = [[StopsView alloc] initWithNibName:@"StopsView" bundle:nil];
+    view.hidesBottomBarWhenPushed = YES;
+    view.title = [route objectForKey:@"route_long_name"];
+    view.route_id = [route objectForKey:@"route_id"];
+	[self.navigationController pushViewController:view animated:YES];
+    
+    
+    
+	[view release];	
+   
+    
 }
 
 
