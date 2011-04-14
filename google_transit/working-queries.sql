@@ -341,7 +341,6 @@ start.trip_id in (select distinct(trip_id) from stop_time where stop_id = 1 and 
 calendar.thursday = 1
 order by 2,3,1
 
-
 /**
 GC to Bridgeport
 **/
@@ -366,3 +365,362 @@ start.stop_id = 1 and
 start.trip_id in (select distinct(trip_id) from stop_time where stop_id = 140 and stop_sequence  > 1) and 
 calendar.thursday = 1
 order by 2,3,1 limit 10
+
+
+
+
+select start.trip_id, departure_time departs, dest.arrival_time arrives, dest.stops nstops from stop_time start, trip, calendar,
+(
+  /* get the arival time for the destination */
+  select trip_id, arrival_time, stop_sequence stops from stop_time where
+  arrival_time > time('now', 'localtime') and 
+  stop_id = (select stop_id from mystops where _id = 1) and stop_sequence > 1 and trip_id in 
+   (
+    /* make sure the destination is on the same trip as the source */
+    select distinct(trip_id) from stop_time where 
+    stop_id = (select stop_id from mystops where _id = 2) and 
+    departure_time > time('now', 'localtime')
+   ) 
+) dest where
+dest.trip_id = start.trip_id and /* join on the trip */
+start.trip_id = trip.trip_id and 
+trip.service_id = calendar.service_id and
+departure_time > time('now', 'localtime') and /* no need to show older trains */
+start.stop_id = (select stop_id from mystops where _id = 2) and 
+start.trip_id in (select distinct(trip_id) from stop_time where stop_id = (select stop_id from mystops where _id = 1) and stop_sequence  > 1) and 
+calendar.thursday = 1
+order by 2,3,1 limit 10
+
+(
+calendar.sunday = ? and
+calendar.monday = ? and
+calendar.tuesday = ? and
+calendar.wednesday = ? and
+calendar.thursday = ? and
+calendar.friday = ? and
+calendar.saturday = ? 
+)
+
+
+drop table if exists mytrips;
+create  table mytrips (
+trip_id int  not null primary key,
+wstop_id int default 0,
+hstop_id int default 0,
+wsequence int default 0,
+hsequence int default 0,
+warrives char(8) default null,
+wdeparts char(8) default null,
+harrives char(8) default null,
+hdeparts char(8) default null,
+going_home int(1) default 0
+);
+create index mytrips_wstopid_idx on mytrips(wstop_id);
+create index mytrips_hstopid_idx on mytrips(wstop_id);
+
+
+drop table if exists worktrips;
+create table worktrips (
+trip_id int  not null primary key,
+wstop_id int default 0,
+wsequence int default 0,
+warrives char(8) default null,
+wdeparts char(8) default null
+);
+drop table if exists hometrips;
+create table hometrips (
+trip_id int  not null primary key,
+hstop_id int default 0,
+hsequence int default 0,
+harrives char(8) default null,
+hdeparts char(8) default null
+);
+
+delete from hometrips;
+insert into 
+hometrips (trip_id, hstop_id,hsequence,harrives,hdeparts) 
+select t.trip_id, stop_id, stop_sequence, arrival_time, departure_time from trip t, stop_time s
+where
+t.trip_id = s.trip_id and stop_id = 140
+and t.trip_id in (
+select t.trip_id from trip t, stop_time s
+where
+t.trip_id = s.trip_id and stop_id = 1
+)
+
+delete from worktrips;
+insert into 
+worktrips (trip_id,wstop_id,wsequence,warrives,wdeparts) 
+select t.trip_id, stop_id, stop_sequence, arrival_time,departure_time
+from trip t, stop_time s
+where
+t.trip_id = s.trip_id and stop_id = 1
+and t.trip_id in (
+select t.trip_id from trip t, stop_time s
+where
+t.trip_id = s.trip_id and stop_id = 140
+)
+
+delete from mytrips;
+insert into mytrips (
+trip_id,
+hstop_id,
+hsequence,
+harrives,
+hdeparts,
+wstop_id,
+wsequence,
+warrives,
+wdeparts) select h.trip_id, hstop_id, hsequence, harrives,hdeparts, wstop_id, wsequence, warrives, wdeparts from
+hometrips h, worktrips w where
+h.trip_id = w.trip_id;
+
+update mytrips set going_home = 1 where hsequence > wsequence;
+
+vacuum;
+
+
+
+select 
+start.trip_id, 
+departure_time departs, 
+arrival_time arrives, 
+from 
+stop_time start, 
+trip, 
+calendar,
+mytrips
+where
+dest.trip_id = start.trip_id and /* join on the trip */
+start.trip_id = trip.trip_id and 
+trip.service_id = calendar.service_id and
+departure_time > time('now', 'localtime') and /* no need to show older trains */
+start.stop_id = (select stop_id from mystops where _id = 2) and 
+start.trip_id in (select distinct(trip_id) from stop_time where stop_id = (select stop_id from mystops where _id = 1) and stop_sequence  > 1) and 
+calendar.thursday = 1
+order by 2,3,1 limit 10
+
+
+
+select m.trip_id, wstop_id, hstop_id, d.departure_time departs, a.arrival_time arrives 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.trip_id = t.trip_id)
+where  m.going_home = 0
+and (
+calendar.tuesday=(strftime('%w','now','localtime')=0)
+)
+
+
+select m.trip_id, t.service_id, wstop_id, hstop_id, d.departure_time departs, a.arrival_time arrives 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+c.tuesday = (abs(strftime('%w','now','localtime'))=2)
+)
+order by departs
+
+
+select distinct m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+c.monday = nullif(0,abs(strftime('%w','now','localtime'))=1) 
+)
+order by departs
+
+
+drop table if exists boolcalendar;
+drop index if exists boolcalendar_service_idx;
+create table boolcalendar (
+_id integer not null primary key autoincrement,
+service_id int default 0,
+available int default 0
+);
+create index boolcalendar_service_idx on boolcalendar(service_id);
+
+
+/*
+Get my trips to work
+*/
+select  m.trip_id _id, t.service_id, strftime('%H:%M',d.departure_time) departs, strftime('%H:%M',a.arrival_time) arrives 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+(c.sunday & (abs(strftime('%w','now','localtime'))=0)) or
+(c.monday & (abs(strftime('%w','now','localtime'))=1)) or
+(c.tuesday & (abs(strftime('%w','now','localtime'))=2)) or
+(c.wednesday & (abs(strftime('%w','now','localtime'))=3)) or
+(c.wednesday & (abs(strftime('%w','now','localtime'))=4)) or
+(c.thursday & (abs(strftime('%w','now','localtime'))=5)) or
+(c.saturday & (abs(strftime('%w','now','localtime'))=6)) 
+)
+order by departs,arrives
+
+/*
+Get my trips home
+*/
+select  m.trip_id _id, t.service_id, strftime('%H:%M',d.departure_time) departs, strftime('%H:%M',a.arrival_time) arrives 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.hstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.wstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 1
+and (
+(c.sunday & (abs(strftime('%w','now','localtime'))=0)) or
+(c.monday & (abs(strftime('%w','now','localtime'))=1)) or
+(c.tuesday & (abs(strftime('%w','now','localtime'))=2)) or
+(c.wednesday & (abs(strftime('%w','now','localtime'))=3)) or
+(c.wednesday & (abs(strftime('%w','now','localtime'))=4)) or
+(c.thursday & (abs(strftime('%w','now','localtime'))=5)) or
+(c.saturday & (abs(strftime('%w','now','localtime'))=6)) 
+)
+order by departs,arrives
+
+
+select t.service_id, d.departure_time departs, a.arrival_time arrives 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+(c.sunday & (abs(strftime('%w','now','localtime'))=0)) or
+(c.monday & (abs(strftime('%w','now','localtime'))=1)) or
+(c.tuesday & (abs(strftime('%w','now','localtime'))=2)) or
+(c.wednesday & (abs(strftime('%w','now','localtime'))=3)) or
+(c.wednesday & (abs(strftime('%w','now','localtime'))=4)) or
+(c.thursday & (abs(strftime('%w','now','localtime'))=5)) or
+(c.saturday & (abs(strftime('%w','now','localtime'))=6)) 
+)
+order by departs,arrives
+
+
+
+
+
+if (REQUIRED_SIZE > mywidth) {
+   nwidth = mywidth-REQUIRED_SIZE;
+   percent = nwidth/mywidth;
+   nheight = myheight-(percent*myheight);
+}
+
+
+{
+    "data": {
+        "user_id": "59281910",
+        "entitlements": {
+            "crosswords": {
+                "expires": "2012-03-26 0:00:00",
+                "expiration_date": "2012-03-26 0:00:00"
+            },
+            "timesreader": {
+                "expires": "2012-03-26 0:00:00",
+                "expiration_date": "2012-03-26 0:00:00"
+            },
+            "mm": {
+                "expiration_date": "2012-03-26 0:00:00",
+                "expires": "2012-03-26 0:00:00"
+            },
+            "mow": {
+                "expires": "2012-03-26 0:00:00",
+                "expiration_date": "2012-03-26 0:00:00"
+            },
+            "msd": {
+                "expires": "2012-03-26 0:00:00",
+                "expiration_date": "2012-03-26 0:00:00"
+            },
+            "mtd": {
+                "expires": "2012-03-26 0:00:00",
+                "expiration_date": "2012-03-26 0:00:00"
+            }
+        }
+    }
+}
+
+
+
+
+
+
+select  m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives, 0 day
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+(c.sunday & (1=0)) or
+(c.monday & (1=0)) or
+(c.tuesday & (1=0)) or
+(c.wednesday & (1=0)) or
+(c.wednesday & (1=0)) or
+(c.thursday & (1=1)) or
+(c.saturday & (1=0)) 
+)
+union
+select  m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives, 1 day 
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+(c.sunday & (1=0)) or
+(c.monday & (1=0)) or
+(c.tuesday & (1=0)) or
+(c.wednesday & (1=0)) or
+(c.thursday & (1=0)) or
+(c.friday & (1=0)) or
+(c.saturday & (1=1)) 
+)
+order by day,departs,arrives
+
+
+
+
+select  m.trip_id _id, t.service_id, d.departure_time departs
+from
+mytrips m 
+inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+inner join trip t on (t.trip_id = m.trip_id)
+inner join calendar c on (c.service_id = t.service_id)
+where  m.going_home = 0
+and (
+(c.sunday & (1=0)) or
+(c.monday & (1=0)) or
+(c.tuesday & (1=0)) or
+(c.wednesday & (1=0)) or
+(c.thursday & (1=0)) or
+(c.friday & (1=0)) or
+(c.saturday & (1=1)) 
+)
+order by departs
+
+select 
