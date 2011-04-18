@@ -9,8 +9,14 @@
 #import "RoutesView.h"
 #import "StopsView.h"
 #import "DataSource.h"
+#import "RouteCellView.h"
+#import "QuartzCore/QuartzCore.h"
 
 @implementation RoutesView
+
+
+
+
 
 
 #pragma mark -
@@ -92,7 +98,6 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    NSLog(@"routes count %d", [routes count]);
     return [routes count];
 }
 
@@ -100,16 +105,55 @@
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    static NSString *CellIdentifier = @"Cell";
-    
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
-    }
+    static NSString *CellIdentifier = @"RouteCell";
+	RouteCellView *cell = (RouteCellView *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+	if (cell == nil) {
+		NSArray* topLevelObjects = [[NSBundle mainBundle] loadNibNamed:@"RouteCellView" owner:nil options:nil];
+		for (id currentObject in topLevelObjects) {
+			if ([currentObject isKindOfClass:[UITableViewCell class]]) {
+				cell = (RouteCellView *)currentObject;
+				break;
+			}
+		}
+	}
     
     // Configure the cell...
     NSDictionary *route = [routes objectAtIndex:indexPath.row];
-    cell.textLabel.text = [route objectForKey:@"route_long_name"];
+    
+    cell.routeBarLabel.text = [route objectForKey:@"route_long_name"];
+    cell.routeLabel.text = [route objectForKey:@"route_long_name"];
+   
+    NSString *colorStr = [NSString stringWithFormat:@"0x%@ff", [route objectForKey:@"route_color"]];
+    unsigned int colorValue;
+    NSScanner *scanner = [NSScanner scannerWithString:colorStr];
+    [scanner scanHexInt:&colorValue];
+    //cell.contentView.backgroundColor = HEXCOLOR(colorValue);
+    cell.routeBarLabel.backgroundColor = HEXCOLOR(colorValue);
+    cell.routeLabel.textColor = HEXCOLOR(colorValue);
+    
+    colorStr = [NSString stringWithFormat:@"0x%@ff", [route objectForKey:@"route_text_color"]];
+    scanner = [NSScanner scannerWithString:colorStr];
+    [scanner scanHexInt:&colorValue];
+    cell.routeBarLabel.textColor = HEXCOLOR(colorValue);
+    
+
+    
+    
+    
+    
+    //cell.routeBarLabel.layer.transform = CATransform3DMakeRotation(M_PI, 1.0f, 0.0f, 0.0f);
+    
+    
+    // XXX: figure out how to set the background color, or set colored box next to line name
+    // may need to split RGB value from routeColorStr into 3 floats
+    //    cell.textLabel.textColor = [UIColor colorWithRed:0.7 green: 0.13 blue:0.13 alpha:1];
+    //cell.textLabel.backgroundColor  = [UIColor colorWithRed:0.7 green: 0.13 blue:0.13 alpha:1];
+    //cell.textLabel.textColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:1];
+    
+    
+    
+    
+    
     return cell;
 }
 

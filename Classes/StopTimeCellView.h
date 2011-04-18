@@ -16,8 +16,9 @@
 	IBOutlet UILabel *fromTimeLabel;
     IBOutlet UILabel *toStopLabel;
 	IBOutlet UILabel *toTimeLabel;
-	IBOutlet UILabel *durationTimeLabel;
-	IBOutlet UILabel *durationDistanceLabel;
+	IBOutlet UILabel *durationLabel;
+    IBOutlet UILabel *distanceLabel;
+    IBOutlet UILabel *headsignLabel;
 	
 }
 
@@ -27,7 +28,8 @@
 @property (nonatomic, retain) IBOutlet UILabel *fromTimeLabel;
 @property (nonatomic, retain) IBOutlet UILabel *toStopLabel;
 @property (nonatomic, retain) IBOutlet UILabel *toTimeLabel;
-@property (nonatomic, retain) IBOutlet UILabel *durationTimeLabel;
-@property (nonatomic, retain) IBOutlet UILabel *durationDistanceLabel;
+@property (nonatomic, retain) IBOutlet UILabel *durationLabel;
+@property (nonatomic, retain) IBOutlet UILabel *distanceLabel;
+@property (nonatomic, retain) IBOutlet UILabel *headsignLabel;
 
 @end

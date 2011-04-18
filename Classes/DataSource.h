@@ -12,6 +12,14 @@
 #import <CoreLocation/CoreLocation.h>
 
 @interface DataSource : NSObject
+
+#define HEXCOLOR(c) [UIColor colorWithRed:((c>>24)&0xFF)/255.0 \
+green:((c>>16)&0xFF)/255.0 \
+blue:((c>>8)&0xFF)/255.0 \
+alpha:((c)&0xFF)/255.0];
+
+
+
 <CLLocationManagerDelegate> {
 	
 	NSString* databaseName;
@@ -37,13 +45,17 @@
 - (void)applicationDidBecomeActive;
 - (void)applicationDidEnterBackground;
 
+
+-(NSArray*) getNextTrainsFrom: (int)fromStopId to: (int)toStopId withDirection: (int)directionId onDay: (NSString*)day afterHour: (int)hour;
 -(NSArray*) getRoutes;
 -(NSArray*) getRouteStops:(NSString*) route_id;
 
 
 -(void) calculateStopsDistancesFrom:(CLLocation *)location;
 
-+ (NSString *)metersToNiceString:(CLLocationDistance)distance;
++ (NSString *)timeToNiceString:(NSString*)time;
++ (NSString *)minutesToNiceString:(NSInteger)minutes;
++ (NSString *)distancesFromLat:(double)fromLat andLon:(double)fromLon toLat:(double)toLat andLon:(double)toLon;
 
 
 @end

@@ -10,7 +10,7 @@
 
 
 @interface GoHomeView : UITableViewController {
-
+    NSArray *trains;
 }
 
 @end

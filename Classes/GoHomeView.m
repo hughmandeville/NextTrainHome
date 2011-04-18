@@ -8,6 +8,7 @@
 
 #import "GoHomeView.h"
 #import "StopTimeCellView.h"
+#import "DataSource.h"
 
 @implementation GoHomeView
 
@@ -42,6 +43,12 @@
     UIImageView *imageView = [[UIImageView alloc] initWithImage: image];	
     self.navigationItem.titleView = imageView;
     [imageView release];
+    
+    DataSource *dataSource = [DataSource sharedInstance];
+    
+	trains = [[dataSource getNextTrainsFrom: 1 to: 140 withDirection: 0 onDay: @"monday" afterHour: 2] retain];
+
+    
 }
 
 
@@ -85,7 +92,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    return 10;
+    return [trains count];
 }
 
 
@@ -103,8 +110,29 @@
 			}
 		}
 	}
-	//NSDictionary* document = [self.documents objectAtIndex:indexPath.row];
-	//cell.title.text = [document valueForKey:@"title"];
+    
+    NSDictionary *train = [trains objectAtIndex:indexPath.row];
+    
+    
+    cell.fromTimeLabel.text = [DataSource timeToNiceString:[train objectForKey:@"departure_time"]];
+    cell.toTimeLabel.text = [DataSource timeToNiceString:[train objectForKey:@"arrival_time"]];
+    cell.fromStopLabel.text = [train objectForKey:@"from_name"];
+    cell.toStopLabel.text = [train objectForKey:@"to_name"];
+    cell.routeLabel.text = [train objectForKey:@"route_long_name"];
+    cell.agencyLabel.text = [train objectForKey:@"agency_name"];
+    cell.headsignLabel.text = [train objectForKey:@"trip_headsign"];
+    cell.durationLabel.text = [DataSource minutesToNiceString:[[train objectForKey:@"trip_time"] integerValue]];   
+    cell.distanceLabel.text = [DataSource distancesFromLat:[[train objectForKey:@"from_lat"] doubleValue]
+                                                    andLon:[[train objectForKey:@"from_lon"] doubleValue] 
+                                                     toLat:[[train objectForKey:@"to_lat"] doubleValue]  
+                                                    andLon:[[train objectForKey:@"to_lon"] doubleValue]];
+    NSString *colorStr = [NSString stringWithFormat:@"0x%@ff", [train objectForKey:@"route_color"]];
+    unsigned int colorValue;
+    NSScanner *scanner = [NSScanner scannerWithString:colorStr];
+    [scanner scanHexInt:&colorValue];
+    cell.routeLabel.textColor = HEXCOLOR(colorValue);
+    
+	
 	 
 	return cell;	
 	

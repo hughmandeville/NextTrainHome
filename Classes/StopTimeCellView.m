@@ -17,9 +17,9 @@
 @synthesize fromTimeLabel;
 @synthesize toStopLabel;
 @synthesize toTimeLabel;
-@synthesize durationTimeLabel;
-@synthesize durationDistanceLabel;
-
+@synthesize headsignLabel;
+@synthesize durationLabel;
+@synthesize distanceLabel;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     
@@ -42,13 +42,14 @@
 - (void)dealloc {
 	
 	[agencyLabel release];
+    [headsignLabel release];
 	[routeLabel release];
 	[fromStopLabel release];
 	[fromTimeLabel release];
 	[toStopLabel release];
 	[toTimeLabel release];
-	[durationTimeLabel release];
-	[durationDistanceLabel release];
+    [distanceLabel release];
+	[durationLabel release];
 	
     [super dealloc];
 }

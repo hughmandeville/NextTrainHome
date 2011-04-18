@@ -87,6 +87,109 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 #pragma mark -
 #pragma mark Database methods
 
+-(NSArray*) getNextTrainsFrom: (int)fromStopId to: (int)toStopId withDirection: (int)directionId onDay: (NSString*)day afterHour: (int)hour {
+
+	
+	NSMutableArray* trains = [[[NSMutableArray alloc] init] autorelease];
+	
+	int ret = 0;
+	
+	NSMutableDictionary* trainDict;
+	
+	
+	// Setup the database object
+	sqlite3 *database;	
+	// Open the database from the users filessytem
+	if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) {
+		// Setup the SQL Statement and compile it for faster access
+		const char *sqlStatement = "select t.route_id, (r.route_long_name || ' Line') as route_long_name, r.route_type, r.route_color, r.route_text_color, "
+        "t.service_id, st_to.trip_id,  "
+        "st_from.departure_time, st_to.arrival_time, "
+        "(strftime('%s', st_to.arrival_time) - strftime('%s',st_from.departure_time)) /  60 as trip_time , "
+        "t.trip_headsign, t.trip_short_name, "
+        "s_to.stop_lat as to_lat, s_to.stop_lon as to_lon, "
+        "s_from.stop_lat as from_lat, s_from.stop_lon as from_lon, "
+        "min(s_from.wheelchair_accessible, s_to.wheelchair_accessible, t.wheelchair_boarding) as wheelchair_accessible, "
+        "s_to.stop_name as to_name, s_from.stop_name as from_name, "
+        "(select agency_name from agency limit 1) as agency_name "
+        "from stop_times st_to "
+        "inner join trips t on t.trip_id = st_to.trip_id "
+        "inner join stop_times st_from on (t.trip_id = st_from.trip_id and st_from.stop_id = 1) "
+        "inner join routes r on r.route_id = t.route_id  "
+        "inner join stops s_to on st_to.stop_id = s_to.stop_id  "
+        "inner join stops s_from on st_from.stop_id = s_from.stop_id "
+        "where st_to.stop_id = 140 and st_to.trip_id in "
+        "(select trip_id from trips where direction_id = 0 and service_id in (select service_id from calendar where monday = 1) "
+        " group by trip_id) "
+        "order by st_from.departure_time asc";
+        
+        // st.departure_time > "15:00:00"
+        
+        sqlite3_stmt *compiledStatement;
+		if((ret = sqlite3_prepare_v2(database, sqlStatement, -1, &compiledStatement, NULL)) == SQLITE_OK) {
+			// Loop through the results and add them to the feeds array
+			while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
+				// Read the data from the result row
+				trainDict = [[NSMutableDictionary alloc] init];
+				NSString* route_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
+				NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                //NSString* route_type = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+                NSString* route_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+                NSString* route_text_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
+                //NSString* service_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 5)];
+                //NSString* trip_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 6)];
+                NSString* departure_time = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 7)];
+                NSString* arrival_time = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 8)];
+                NSString* trip_time = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 9)];
+                NSString* trip_headsign = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 10)];
+                NSString* trip_short_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 11)];
+                NSString* to_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 12)];
+                NSString* to_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 13)];
+                NSString* from_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 14)];
+                NSString* from_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 15)];
+                //NSString* wheelchair_accessible = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 16)];
+                NSString* to_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 17)];
+                NSString* from_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 18)];
+                NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 19)];
+				[trainDict setValue:route_id forKey:@"route_id"];
+				[trainDict setValue:route_long_name forKey:@"route_long_name"];
+                [trainDict setValue:route_color forKey:@"route_color"];
+				[trainDict setValue:route_text_color forKey:@"route_text_color"];
+                [trainDict setValue:departure_time forKey:@"departure_time"];
+                [trainDict setValue:arrival_time forKey:@"arrival_time"];
+                [trainDict setValue:trip_time forKey:@"trip_time"];
+                [trainDict setValue:trip_headsign forKey:@"trip_headsign"];
+                [trainDict setValue:trip_short_name forKey:@"trip_short_name"];
+                [trainDict setValue:to_lat forKey:@"to_lat"];
+                [trainDict setValue:to_lon forKey:@"to_lon"];
+                [trainDict setValue:from_lat forKey:@"from_lat"];
+                [trainDict setValue:from_lon forKey:@"from_lon"];
+                [trainDict setValue:to_name forKey:@"to_name"];
+                [trainDict setValue:from_name forKey:@"from_name"];
+                [trainDict setValue:agency_name forKey:@"agency_name"];
+                [trains addObject:trainDict];
+				[trainDict release];		
+				
+			}
+		} else {
+			NSLog(@"Problem preparing SQL statement.   Returned %d for database at %@.",ret, databasePath);
+		}
+		// Release the compiled statement from memory
+		sqlite3_finalize(compiledStatement);
+		sqlite3_close(database);
+		
+	} else {
+		NSLog(@"Problem opening the database at %@.", databasePath);	
+	}
+	
+	return (trains);
+}
+
+        
+        
+
+
+
 -(NSArray*) getRoutes {
 	
 	//locationIndex = 0;
@@ -103,8 +206,9 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	// Open the database from the users filessytem
 	if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) {
 		// Setup the SQL Statement and compile it for faster access
-		const char *sqlStatement = "select route_id, route_long_name, route_desc, (select agency_name from agency limit 1) as agency_name "
-                                   "from route order by route_long_name asc";
+		const char *sqlStatement = "select route_id, route_long_name, route_desc, "
+        "route_type, route_color, route_text_color, (select agency_name from agency limit 1) as agency_name "
+        "from routes order by route_long_name asc";
 		sqlite3_stmt *compiledStatement;
 		if((ret = sqlite3_prepare_v2(database, sqlStatement, -1, &compiledStatement, NULL)) == SQLITE_OK) {
 			// Loop through the results and add them to the feeds array
@@ -114,13 +218,18 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 				NSString* route_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
 				NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
 				NSString* route_desc = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
-				NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+                //NSString* route_type = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+                NSString* route_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
+                NSString* route_text_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 5)];
+				NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 6)];
 				
 				[routeDict setValue:route_id forKey:@"route_id"];
 				[routeDict setValue:route_long_name forKey:@"route_long_name"];
                 [routeDict setValue:route_desc forKey:@"route_desc"];
                 [routeDict setValue:agency_name forKey:@"agency_name"];
-				[routes addObject:routeDict];
+                [routeDict setValue:route_color forKey:@"route_color"];
+				[routeDict setValue:route_text_color forKey:@"route_text_color"];
+                [routes addObject:routeDict];
 				[routeDict release];		
 				
 			}
@@ -156,9 +265,9 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) {
 		NSString* sql = [NSString stringWithFormat:@"select st.stop_id, max(st.stop_sequence) as stop_sequence, "
                          "s.stop_name, s.stop_desc, s.stop_lat, s.stop_lon "
-                         "from stop_time st "
-                         "inner join stop s on s.stop_id = st.stop_id "
-                         "where trip_id in (select trip_id from trip where route_id = %@ and trip_headsign like '%%outbound'  group by trip_id) "
+                         "from stop_times st "
+                         "inner join stops s on s.stop_id = st.stop_id "
+                         "where trip_id in (select trip_id from trips where route_id = %@ and direction_id = 0) "
                          "group by st.stop_id order by stop_sequence asc",
                          route_id];
         
@@ -300,13 +409,76 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 
 
 ///
-/// Given distance in meters returns distance string in nice format (e.g. 500 feet, 1.2 miles, ...).
+/// Given time (01:20:00) returns time string in nice format (1:20 AM).
 ///
-+ (NSString *)metersToNiceString:(CLLocationDistance)distance {
-	NSString *result;
-	double feet = distance * 3.2808399;
++ (NSString *)timeToNiceString:(NSString *)time{
+	NSString *result = @"";
+    NSArray *parts = [time componentsSeparatedByString:@":"];
+    if ([parts count] >= 2) {
+        NSString *meridian = @"AM";
+        NSInteger hours = [[parts objectAtIndex:0] integerValue];
+        NSInteger minutes = [[parts objectAtIndex:1] integerValue];
+        hours = hours % 24;
+        if (hours >= 12) {
+            meridian = @"PM";
+            hours = hours % 12;
+        }
+        if (hours == 0) {
+            hours = 12;
+        }
+        result = [NSString stringWithFormat:@"%d:%02d %@", hours, minutes, meridian];
+    }
+    
+	return (result);
+}
+
+
+///
+/// Given time in minutes returns time string in nice format (e.g. 1 hour 10 minutes).
+///
++ (NSString *)minutesToNiceString:(NSInteger)minutes {
+	NSString *result = nil;
 	
-	if (feet <= 100) {
+    NSInteger hours = minutes / 60;
+    NSInteger remainingMinutes = minutes % 60;
+    NSString *space = @"";
+    if (hours > 1) {
+        result = [NSString stringWithFormat:@"%d hours", hours];
+        space = @" ";
+    } else if (hours == 1) {
+        result = [NSString stringWithFormat:@"1 hour"];
+        space = @" ";
+    }
+   
+    
+    if (remainingMinutes > 1) {
+        result = [NSString stringWithFormat:@"%@%@%d minutes", result, space, remainingMinutes];
+    } else if (remainingMinutes == 1) {
+        result = [NSString stringWithFormat:@"%@%@1 minute", result, space];
+
+    }
+    
+	return (result);
+}
+
+
+
++ (NSString *)distancesFromLat:(double)fromLat andLon:(double)fromLon toLat:(double)toLat andLon:(double)toLon {
+    
+    NSString *result;
+   
+    CLLocation* fromLocation = [[CLLocation alloc] initWithLatitude:fromLat longitude:fromLon];
+    CLLocation* toLocation = [[CLLocation alloc] initWithLatitude:toLat longitude:toLon];
+    CLLocationDistance distance = [toLocation distanceFromLocation:fromLocation];
+
+    [fromLocation release];
+    [toLocation release];
+    
+    double feet = distance * 3.2808399;
+    
+    NSLog(@"feet: %f, from: %f %f, to: %f %f", feet, fromLat, fromLon, toLat, toLon);
+    
+    if (feet <= 100) {
 		result = [NSString stringWithFormat:@"100 feet"];
 	} else if (feet <= 1000) {
 		result = [NSString stringWithFormat:@"%1.0f feet", feet];
@@ -315,7 +487,13 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 		result = [NSString stringWithFormat:@"%1.1f miles", miles];
 	}
 	return (result);
+  
 }
+
+
+
+
+
 
 
 
@@ -388,8 +566,8 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 
 	
 	
-	[locationManager startMonitoringSignificantLocationChanges];
-	//[locationManager startUpdatingLocation];
+	//[locationManager startMonitoringSignificantLocationChanges];
+	[locationManager startUpdatingLocation];
 	
 	/*	
 	NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
