@@ -49,7 +49,7 @@ File.open("#{input[0]}.txt",'r').each do |f|
       line[3] = "null";
     end
     
-    output.puts "insert into stop (stop_id, stop_name, stop_desc, stop_lat, stop_lon) values (#{line[0]},'#{line[1].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[2].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}',#{line[3]},#{line[4].chomp});"
+    output.puts "insert into stop (stop_id, stop_name, stop_desc, stop_lat, stop_lon) values (#{line[0]},'#{line[1].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[2].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}',#{line[4].chomp},#{line[5].chomp});"
   when "stop_times"
     if line[1].class == String
       line[1].gsub!(/^ /,'')
