@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>getHomeSql</key>
+	<string>select s.stop_id _id, s.stop_desc name from mystops m, stop s where m.stop_id = s.stop_id and m._id= 1</string>
+	<key>getStationsSql</key>
+	<string>select stop_id _id, stop_desc name, stop_lat lat, stop_lon lon from stop order by stop_desc</string>
+	<key>getWorkSql</key>
+	<string>select s.stop_id _id, s.stop_desc name from mystops m, stop s where m.stop_id = s.stop_id and m._id= 2</string>
+	<key>homeTripsSql</key>
+	<string>select  m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives, 0 day, w.stop_desc work, h.stop_desc home,
+	    h.stop_lat hlat, h.stop_lon hlon, w.stop_lat wlat, w.stop_lon wlon,
+        (r.route_long_name || ' Line') as long_name, r.route_type, (select agency_name from agency limit 1) as agency_name,
+        t.trip_headsign, (strftime('%@', a.arrival_time) - strftime('%@',d.departure_time)) /  60 as trip_time
+    from
+    mytrips m 
+    inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.hstop_id)
+    inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.wstop_id)
+    inner join trip t on (t.trip_id = m.trip_id)
+    inner join calendar c on (c.service_id = t.service_id)
+    inner join stop w on (w.stop_id = m.wstop_id)
+    inner join stop h on (h.stop_id = m.hstop_id)
+    inner join route r on (r.route_id = t.route_id)
+    where  m.going_home = 1
+    and (
+    (c.sunday   &amp; (1=abs(%i))) or
+    (c.monday   &amp; (1=abs(%i))) or
+    (c.tuesday  &amp; (1=abs(%i))) or
+    (c.wednesday&amp; (1=abs(%i))) or
+    (c.thursday &amp; (1=abs(%i))) or
+    (c.friday   &amp; (1=abs(%i))) or
+    (c.saturday &amp; (1=abs(%i))) 
+    ) 
+    and d.departure_time > time('now', 'localtime', '-20 minutes')
+    union
+    select  m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives, 1 day, w.stop_desc work, h.stop_desc home,
+    h.stop_lat hlat, h.stop_lon hlon, w.stop_lat wlat, w.stop_lon wlon,
+    (r.route_long_name || ' Line') as long_name, r.route_type, (select agency_name from agency limit 1) as agency_name,
+    t.trip_headsign, (strftime('%@', a.arrival_time) - strftime('%@',d.departure_time)) /  60 as trip_time
+    from
+    mytrips m 
+    inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.hstop_id)
+    inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.wstop_id)
+    inner join trip t on (t.trip_id = m.trip_id)
+    inner join calendar c on (c.service_id = t.service_id)
+    inner join stop w on (w.stop_id = m.wstop_id)
+    inner join stop h on (h.stop_id = m.hstop_id)
+    inner join route r on (r.route_id = t.route_id)
+    where  m.going_home = 1
+    and (
+    (c.sunday   &amp; (1=abs(%i))) or
+    (c.monday   &amp; (1=abs(%i))) or
+    (c.tuesday  &amp; (1=abs(%i))) or
+    (c.wednesday&amp; (1=abs(%i))) or
+    (c.thursday &amp; (1=abs(%i))) or
+    (c.friday   &amp; (1=abs(%i))) or
+    (c.saturday &amp; (1=abs(%i))) 
+    )
+    order by day,departs,arrives limit 10</string>
+	<key>optimizeSql</key>
+	<string>vacuum;</string>
+	<key>saveHomeSql</key>
+	<string>insert or replace into mystops (_id,stop_id) values (1,%i)</string>
+	<key>saveWorkSql</key>
+	<string>insert or replace into mystops (_id,stop_id) values (2,%i)</string>
+	<key>updateTripsSql</key>
+	<string>PRAGMA synchronous = 0;
+	    PRAGMA temp_store = 2;
+	    BEGIN TRANSACTION;
+	    delete from hometrips;
+    insert into 
+    hometrips (trip_id, hstop_id,hsequence,harrives,hdeparts) 
+    select t.trip_id, s.stop_id, stop_sequence, arrival_time, departure_time from trip t, stop_time s, mystops ms
+    where
+    t.trip_id = s.trip_id and 
+    s.stop_id = ms.stop_id and
+    ms._id = 1
+    and t.trip_id in (
+    select t.trip_id from trip t, stop_time s, mystops ms
+    where
+    t.trip_id = s.trip_id and s.stop_id = ms.stop_id and ms._id = 2
+    );
+    delete from worktrips;
+    insert into 
+    worktrips (trip_id,wstop_id,wsequence,warrives,wdeparts) 
+    select t.trip_id,s.stop_id, stop_sequence, arrival_time,departure_time
+    from trip t, stop_time s, mystops ms
+    where
+    t.trip_id = s.trip_id and s.stop_id = ms.stop_id and ms._id = 2
+    and t.trip_id in (
+    select t.trip_id from trip t, stop_time s, mystops ms
+    where
+    t.trip_id = s.trip_id and s.stop_id = ms.stop_id and ms._id = 1
+    );
+    delete from mytrips;
+    insert into mytrips (
+    trip_id,
+    hstop_id,
+    hsequence,
+    harrives,
+    hdeparts,
+    wstop_id,
+    wsequence,
+    warrives,
+    wdeparts) select h.trip_id, hstop_id, hsequence, harrives,hdeparts, wstop_id, wsequence, warrives, wdeparts from
+    hometrips h, worktrips w where
+    h.trip_id = w.trip_id;
+    update mytrips set going_home = 1 where hsequence > wsequence;
+    COMMIT TRANSACTION;
+    vacuum;</string>
+	<key>workTripsSql</key>
+	<string>select  m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives, 0 day,  h.stop_desc home,w.stop_desc work,
+	    w.stop_lat wlat, w.stop_lon wlon, h.stop_lat hlat, h.stop_lon hlon,
+        (r.route_long_name || ' Line') as long_name, r.route_type, (select agency_name from agency limit 1) as agency_name,
+        t.trip_headsign, (strftime('%@', a.arrival_time) - strftime('%@',d.departure_time)) /  60 as trip_time
+    from
+    mytrips m 
+    inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+    inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+    inner join trip t on (t.trip_id = m.trip_id)
+    inner join calendar c on (c.service_id = t.service_id)
+    inner join stop w on (w.stop_id = m.wstop_id)
+    inner join stop h on (h.stop_id = m.hstop_id)
+    inner join route r on (r.route_id = t.route_id)
+    where  m.going_home = 0
+    and (
+    (c.sunday    &amp; (1=abs(%i))) or
+    (c.monday    &amp; (1=abs(%i))) or
+    (c.tuesday   &amp; (1=abs(%i))) or
+    (c.wednesday &amp; (1=abs(%i))) or
+    (c.thursday  &amp; (1=abs(%i))) or
+    (c.friday    &amp; (1=abs(%i))) or
+    (c.saturday  &amp; (1=abs(%i))) 
+    )
+    and d.departure_time > time('now', 'localtime', '-20 minutes')
+    union
+    select  m.trip_id _id, t.service_id, d.departure_time departs, a.arrival_time arrives, 1 day,  h.stop_desc home, w.stop_desc work,
+    w.stop_lat wlat, w.stop_lon wlon, h.stop_lat hlat, h.stop_lon hlon,
+    (r.route_long_name || ' Line') as long_name, r.route_type, (select agency_name from agency limit 1) as agency_name,
+    t.trip_headsign, (strftime('%@', a.arrival_time) - strftime('%@',d.departure_time)) /  60 as trip_time
+    
+    from
+    mytrips m 
+    inner join stop_time a on (a.trip_id = m.trip_id and a.stop_id = m.wstop_id)
+    inner join stop_time d on (d.trip_id = m.trip_id and d.stop_id = m.hstop_id)
+    inner join trip t on (t.trip_id = m.trip_id)
+    inner join calendar c on (c.service_id = t.service_id)
+    inner join stop s on (s.stop_id = m.wstop_id)
+    inner join stop w on (w.stop_id = m.wstop_id)
+    inner join stop h on (h.stop_id = m.hstop_id)
+    inner join route r on (r.route_id = t.route_id)
+    where  m.going_home = 0
+    and (
+    (c.sunday    &amp; (1=abs(%i))) or
+    (c.monday    &amp; (1=abs(%i))) or
+    (c.tuesday   &amp; (1=abs(%i))) or
+    (c.wednesday &amp; (1=abs(%i))) or
+    (c.thursday  &amp; (1=abs(%i))) or
+    (c.friday    &amp; (1=abs(%i))) or
+    (c.saturday  &amp; (1=abs(%i))) 
+    )
+    order by day,departs,arrives limit 10</string>
+</dict>
+</plist>
