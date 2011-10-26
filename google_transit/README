@@ -1,0 +1,6 @@
+Get the latest data from here:
+
+http://httqa.mta.info/developers/download.html
+
+I manually wrote the scripts to create the database 
+tables and a ruby parser that converts the text to 
