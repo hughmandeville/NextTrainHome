@@ -7,10 +7,21 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SelectHomeView.h"
 
+@interface SettingsView : UIViewController <SelectHomeViewDelegate> {
+    UIButton *homeStation;
+    UIButton *workStation;
 
-@interface SettingsView : UIViewController {
-
+    BOOL isHome;
 }
+
+-(IBAction)pickHome:(id)sender;
+-(IBAction)pickWork:(id)sender;
+-(BOOL)isHome;
+-(void)isHome:(BOOL)setHome;
+@property (assign) IBOutlet UIButton *homeStation;
+@property (assign) IBOutlet UIButton *workStation;
+
 
 @end

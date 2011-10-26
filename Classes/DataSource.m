@@ -19,11 +19,221 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 
 @implementation DataSource
 
-
 @synthesize locationManager;
 @synthesize currentLocation;
 
+-(NSString *)getSql:(NSString *)name
+{
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"SQLStatements" ofType:@"plist"];
+    NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
+    NSString *sql = [dict objectForKey:name];
+    //NSLog(@"We have %@", sql);
+    return sql;
+}
 
+/*
+ * This message reciever will get all of the stops so the user can choose one as
+ * their home stops. Returns a dictionary of arrays e.g. getObjectForKey:@stopIds getObjectForKey:@stopNames
+ */
+-(NSArray *)getAllStops
+{
+    sqlite3 *database;
+	int ret = 0;
+    NSString *sql = [self getSql:@"getStationsSql"];
+    NSMutableArray *ids = [[NSMutableArray alloc] init];
+    NSMutableArray *names = [[NSMutableArray alloc] init];
+    
+    if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+     
+        // Setup the SQL Statement and compile it for faster access
+		sqlite3_stmt *compiledStatement;
+		if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) 
+        {
+			// Loop through the results and update the distance
+			while(sqlite3_step(compiledStatement) == SQLITE_ROW) 
+            {
+                NSInteger pk = [[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)] integerValue];
+                NSString *name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                [names addObject:name];
+                [ids addObject:[NSNumber numberWithInt:pk]];
+            }
+        } else {
+             NSCAssert1(0, @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg(database));
+        }
+        sqlite3_finalize(compiledStatement);
+        sqlite3_close(database);
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+    NSLog(@"we have this many pks: %i",[ids count]);
+    
+    NSArray *result = [[[NSArray alloc] initWithObjects:ids, names, nil] autorelease];
+    [names release];
+    [ids release];
+    return result;
+}
+
+-(void)setHomeStop:(NSNumber *)homeStopId
+{
+    // This sql has one param to set with %i
+    NSString *sql = [self getSql:@"saveHomeSql"];
+    sql = [NSString stringWithFormat:sql,[homeStopId intValue]];
+    sqlite3 *database;
+	int ret = 0;
+    if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+        // Setup the SQL Statement and compile it for faster access
+		sqlite3_stmt *compiledStatement;
+        if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) 
+        {
+            sqlite3_step(compiledStatement);
+            sqlite3_finalize(compiledStatement);
+            
+            sql = [self getSql:@"updateTripsSql"];
+            sqlite3_exec(database,[sql cStringUsingEncoding:NSASCIIStringEncoding], NULL,NULL,NULL);
+        } 
+        else 
+        {
+            NSLog(@"Problem executing %@", sql);
+        }
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+}
+
+-(void)setWorkStop:(NSNumber *)workStopId
+{
+    // This sql has one param to set with %i
+    NSString *sql = [self getSql:@"saveWorkSql"];
+    sql = [NSString stringWithFormat:sql,[workStopId intValue]];
+    sqlite3 *database;
+	int ret = 0;
+    if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+        // Setup the SQL Statement and compile it for faster access
+		sqlite3_stmt *compiledStatement;
+        if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) 
+        {
+            sqlite3_step(compiledStatement); 
+            sqlite3_finalize(compiledStatement);
+            
+            //sql = [NSString stringWithFormat:sql];
+            if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) 
+                
+            {
+                sqlite3_step(compiledStatement);
+                sqlite3_finalize(compiledStatement);
+                NSLog(@"updated my trips");
+            }
+            else
+            {
+                NSLog(@"unable to update the db with %@", sql);
+            }
+            
+        } 
+        else 
+        {
+            NSLog(@"Problem executing %@", sql);
+        }
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+}
+
+-(NSDictionary *)getHomeStop
+{
+    
+    sqlite3 *database;
+	int ret = 0;
+    NSString *sql = [self getSql:@"getHomeSql"];
+    NSLog(@"We have %@", sql);
+    NSNumber *pk = nil;
+    NSString *name = nil;
+    
+    if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+        
+        // Setup the SQL Statement and compile it for faster access
+		sqlite3_stmt *compiledStatement;
+		if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) 
+        {
+			// Loop through the results and update the distance
+			while(sqlite3_step(compiledStatement) == SQLITE_ROW) 
+            {
+                pk = [NSNumber numberWithInt:[[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)] integerValue]];
+                name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+            }
+        } else {
+            NSCAssert1(0, @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg(database));
+        }
+        sqlite3_finalize(compiledStatement);
+        sqlite3_close(database);
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+    
+    NSLog(@"we have this pks: %@",pk);
+    NSDictionary *dict = [[[NSDictionary alloc] initWithObjectsAndKeys:pk, @"pk", name, @"name",nil] autorelease];
+    return dict;    
+}
+-(NSNumber *)getHomeStopId
+{
+    NSDictionary *dict = [self getHomeStop];
+    return [dict objectForKey:@"pk"];
+}
+-(NSDictionary *)getWorkStop
+{
+    sqlite3 *database;
+	int ret = 0;
+    NSString *sql = [self getSql:@"getWorkSql"];
+    NSLog(@"We have %@", sql);
+    NSNumber *pk = nil;
+    NSString *name = nil;
+    
+    if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+        
+        // Setup the SQL Statement and compile it for faster access
+		sqlite3_stmt *compiledStatement;
+		if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) 
+        {
+			// Loop through the results and update the distance
+			while(sqlite3_step(compiledStatement) == SQLITE_ROW) 
+            {
+                pk = [NSNumber numberWithInt:[[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)] integerValue]];
+                name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+            }
+        } else {
+            NSCAssert1(0, @"Error: failed to prepare statement with message '%s'.", sqlite3_errmsg(database));
+        }
+        sqlite3_finalize(compiledStatement);
+        sqlite3_close(database);
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+    
+    NSLog(@"we have this pks: %@",pk);
+    NSDictionary *dict = [[[NSDictionary alloc] initWithObjectsAndKeys:pk, @"pk", name, @"name",nil] autorelease];
+    return dict; 
+}
+
+
+-(NSNumber *)getWorkStopId
+{
+    NSDictionary *dict = [self getWorkStop];
+    return [dict objectForKey:@"pk"];
+}
 
 
 //
@@ -36,11 +246,11 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	
 	sqlite3 *database;
 	int ret = 0;
-
+    
 	NSString* sql = [NSString stringWithFormat:@"SELECT l.id, l.latitude, l.longitude, l.distance, l.from_location, m.day_of_week FROM location l "
 					 "INNER JOIN meeting m ON m.location_id = l.id WHERE (from_location is null) OR (from_location != '%f,%f') ",
 					 location.coordinate.latitude, location.coordinate.longitude];
-
+    
 	
 	if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) {
 		
@@ -53,11 +263,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 				int id = [[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)] intValue];
 				CLLocationDegrees meetingLat = [[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)] doubleValue];
 				CLLocationDegrees meetingLng = [[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)] doubleValue];
-				CLLocation* meetingLocation = [[CLLocation alloc] initWithLatitude:meetingLat longitude:meetingLng];
-				
-				CLLocationDistance distance = [location distanceFromLocation:meetingLocation];
+				CLLocation* meetingLocation  = [[CLLocation alloc] initWithLatitude:meetingLat longitude:meetingLng];
+				CLLocationDistance distance  = [location distanceFromLocation:meetingLocation];
 				[meetingLocation release];
-
+                
 				NSString* sql2 = [NSString stringWithFormat:@"UPDATE location SET distance = %f, from_location = '%f,%f' WHERE id = %d", 
 								  distance, 
 								  location.coordinate.latitude, location.coordinate.longitude,
@@ -72,23 +281,202 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 				}
 				
 				//NSLog(@"Calculating id %d lat %f lng %f distance %@", id, meetingLat, meetingLng, [Utilities metersToNiceString:distance]);
-																	 
+                
 			}
 		}
+        if (ret != 0) 
+        {
+            NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+        }
 		sqlite3_finalize(compiledStatement);
 		sqlite3_close(database);
 	}
-	 
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+    
 }
-																 
 
+
+-(NSArray *)getHomeStops
+{
+    NSMutableArray* trains = [[[NSMutableArray alloc] init] autorelease];
+	
+	int ret = 0;
+	
+	NSMutableDictionary* trainDict;
+	
+	
+	// Setup the database object
+	sqlite3 *database;
+    NSString *sql = [self getSql:@"homeTripsSql"];
+    NSString *filler = @"%s";
+    NSArray *days = [DataSource getDaysForDay];
+    sql = [NSString stringWithFormat:sql, filler,filler,
+           [[days objectAtIndex:0] intValue], 
+           [[days objectAtIndex:1] intValue], 
+           [[days objectAtIndex:2] intValue], 
+           [[days objectAtIndex:3] intValue], 
+           [[days objectAtIndex:4] intValue], 
+           [[days objectAtIndex:5] intValue], 
+           [[days objectAtIndex:6] intValue],filler,filler, 
+           [[days objectAtIndex:0] intValue], 
+           [[days objectAtIndex:1] intValue], 
+           [[days objectAtIndex:2] intValue], 
+           [[days objectAtIndex:3] intValue], 
+           [[days objectAtIndex:4] intValue], 
+           [[days objectAtIndex:5] intValue], 
+           [[days objectAtIndex:6] intValue] ];
+    NSLog(@"Our formatted string is %@", sql);
+	// Open the database from the users filessytem
+	if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+        sqlite3_stmt *compiledStatement;
+		if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK)
+        {
+            // Loop through the results and add them to the feeds array
+			while(sqlite3_step(compiledStatement) == SQLITE_ROW) 
+            {
+                // Read the data from the result row
+                trainDict = [[NSMutableDictionary alloc] init];
+                
+                NSString *trip_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
+                NSString *service_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                NSString *departs = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+                NSString *arrives = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+                NSString *day = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
+                NSString *work =[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 5)]; 
+                NSString *home =[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 6)]; 
+                NSString* to_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 7)];
+                NSString* to_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 8)];
+                NSString* from_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 9)];
+                NSString* from_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 10)];
+                NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 11)];
+                NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 13)];
+                NSString* trip_headsign = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 14)];
+                [trainDict setValue:trip_id forKey:@"trip_id"];
+                [trainDict setValue:service_id forKey:@"service_id"];
+                [trainDict setValue:departs forKey:@"departs"];
+                [trainDict setValue:arrives forKey:@"arrives"];
+                [trainDict setValue:day forKey:@"day"];
+                [trainDict setValue:work forKey:@"work"];
+                [trainDict setValue:home forKey:@"home"];
+                [trainDict setValue:to_lat forKey:@"to_lat"];
+                [trainDict setValue:to_lon forKey:@"to_lon"];
+                [trainDict setValue:from_lat forKey:@"from_lat"];
+                [trainDict setValue:from_lon forKey:@"from_lon"];
+                [trainDict setValue:route_long_name forKey:@"route_long_name"];
+                [trainDict setValue:agency_name forKey:@"agency_name"];
+                [trainDict setValue:trip_headsign forKey:@"trip_headsign"];
+                [trains addObject:trainDict];
+                [trainDict release];
+                
+            }
+        }
+		// Release the compiled statement from memory
+		sqlite3_finalize(compiledStatement);
+		sqlite3_close(database);
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+    return (trains);
+}
+
+-(NSArray *)getWorkStops
+{
+    NSMutableArray* trains = [[[NSMutableArray alloc] init] autorelease];
+	
+	int ret = 0;
+	
+	NSMutableDictionary* trainDict;
+	
+	
+	// Setup the database object
+	sqlite3 *database;
+    NSString *sql = [self getSql:@"workTripsSql"];
+    NSString *filler = @"%s";
+    NSArray *days = [DataSource getDaysForDay];
+    sql = [NSString stringWithFormat:sql, filler, filler,
+           [[days objectAtIndex:0] intValue], 
+           [[days objectAtIndex:1] intValue], 
+           [[days objectAtIndex:2] intValue], 
+           [[days objectAtIndex:3] intValue], 
+           [[days objectAtIndex:4] intValue], 
+           [[days objectAtIndex:5] intValue], 
+           [[days objectAtIndex:6] intValue], filler, filler,
+           [[days objectAtIndex:0] intValue], 
+           [[days objectAtIndex:1] intValue], 
+           [[days objectAtIndex:2] intValue], 
+           [[days objectAtIndex:3] intValue], 
+           [[days objectAtIndex:4] intValue], 
+           [[days objectAtIndex:5] intValue], 
+           [[days objectAtIndex:6] intValue]];
+    NSLog(@"Our formatted string is %@", sql);
+	// Open the database from the users filessytem
+	if((ret = sqlite3_open([databasePath UTF8String], &database)) == SQLITE_OK) 
+    {
+        sqlite3_stmt *compiledStatement;
+		if ((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK)
+        {
+            // Loop through the results and add them to the feeds array
+			while(sqlite3_step(compiledStatement) == SQLITE_ROW) 
+            {
+                // Read the data from the result row
+                trainDict = [[NSMutableDictionary alloc] init];
+                
+                NSString *trip_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
+                NSString *service_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                NSString *departs = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+                NSString *arrives = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+                NSString *day = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
+                NSString *work =[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 5)]; 
+                NSString *home =[NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 6)]; 
+                NSString* to_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 7)];
+                NSString* to_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 8)];
+                NSString* from_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 9)];
+                NSString* from_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 10)];
+                NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 11)];
+                NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 13)];
+                NSString* trip_headsign = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 14)];
+                [trainDict setValue:trip_id forKey:@"trip_id"];
+                [trainDict setValue:service_id forKey:@"service_id"];
+                [trainDict setValue:departs forKey:@"departs"];
+                [trainDict setValue:arrives forKey:@"arrives"];
+                [trainDict setValue:day forKey:@"day"];
+                [trainDict setValue:work forKey:@"work"];
+                [trainDict setValue:home forKey:@"home"];
+                [trainDict setValue:to_lat forKey:@"to_lat"];
+                [trainDict setValue:to_lon forKey:@"to_lon"];
+                [trainDict setValue:from_lat forKey:@"from_lat"];
+                [trainDict setValue:from_lon forKey:@"from_lon"];
+                [trainDict setValue:route_long_name forKey:@"route_long_name"];
+                [trainDict setValue:agency_name forKey:@"agency_name"];
+                [trainDict setValue:trip_headsign forKey:@"trip_headsign"];
+                [trains addObject:trainDict];
+                [trainDict release];
+                
+            }
+        }
+		// Release the compiled statement from memory
+		sqlite3_finalize(compiledStatement);
+		sqlite3_close(database);
+    }
+    if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
+    return (trains);
+}
 
 
 #pragma mark -
 #pragma mark Database methods
 
 -(NSArray*) getNextTrainsFrom: (int)fromStopId to: (int)toStopId withDirection: (int)directionId onDay: (NSString*)day afterHour: (int)hour {
-
+    
 	
 	NSMutableArray* trains = [[[NSMutableArray alloc] init] autorelease];
 	
@@ -129,10 +517,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 		if((ret = sqlite3_prepare_v2(database, sqlStatement, -1, &compiledStatement, NULL)) == SQLITE_OK) {
 			// Loop through the results and add them to the feeds array
 			while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
-				// Read the data from the result row
-				trainDict = [[NSMutableDictionary alloc] init];
-				NSString* route_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
-				NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                // Read the data from the result row
+                trainDict = [[NSMutableDictionary alloc] init];
+                NSString* route_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
+                NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
                 //NSString* route_type = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
                 NSString* route_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
                 NSString* route_text_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
@@ -151,10 +539,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
                 NSString* to_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 17)];
                 NSString* from_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 18)];
                 NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 19)];
-				[trainDict setValue:route_id forKey:@"route_id"];
-				[trainDict setValue:route_long_name forKey:@"route_long_name"];
+                [trainDict setValue:route_id forKey:@"route_id"];
+                [trainDict setValue:route_long_name forKey:@"route_long_name"];
                 [trainDict setValue:route_color forKey:@"route_color"];
-				[trainDict setValue:route_text_color forKey:@"route_text_color"];
+                [trainDict setValue:route_text_color forKey:@"route_text_color"];
                 [trainDict setValue:departure_time forKey:@"departure_time"];
                 [trainDict setValue:arrival_time forKey:@"arrival_time"];
                 [trainDict setValue:trip_time forKey:@"trip_time"];
@@ -168,12 +556,16 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
                 [trainDict setValue:from_name forKey:@"from_name"];
                 [trainDict setValue:agency_name forKey:@"agency_name"];
                 [trains addObject:trainDict];
-				[trainDict release];		
+                [trainDict release];		
 				
 			}
 		} else {
 			NSLog(@"Problem preparing SQL statement.   Returned %d for database at %@.",ret, databasePath);
 		}
+        if (ret != 0) 
+        {
+            NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+        }
 		// Release the compiled statement from memory
 		sqlite3_finalize(compiledStatement);
 		sqlite3_close(database);
@@ -181,12 +573,15 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	} else {
 		NSLog(@"Problem opening the database at %@.", databasePath);	
 	}
-	
+	if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
 	return (trains);
 }
 
-        
-        
+
+
 
 
 
@@ -211,31 +606,35 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
         "from routes order by route_long_name asc";
 		sqlite3_stmt *compiledStatement;
 		if((ret = sqlite3_prepare_v2(database, sqlStatement, -1, &compiledStatement, NULL)) == SQLITE_OK) {
-			// Loop through the results and add them to the feeds array
-			while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
-				// Read the data from the result row
-				routeDict = [[NSMutableDictionary alloc] init];
-				NSString* route_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
-				NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
-				NSString* route_desc = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+            // Loop through the results and add them to the feeds array
+            while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
+                // Read the data from the result row
+                routeDict = [[NSMutableDictionary alloc] init];
+                NSString* route_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
+                NSString* route_long_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                NSString* route_desc = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
                 //NSString* route_type = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
                 NSString* route_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
                 NSString* route_text_color = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 5)];
-				NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 6)];
-				
-				[routeDict setValue:route_id forKey:@"route_id"];
-				[routeDict setValue:route_long_name forKey:@"route_long_name"];
+                NSString* agency_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 6)];
+                
+                [routeDict setValue:route_id forKey:@"route_id"];
+                [routeDict setValue:route_long_name forKey:@"route_long_name"];
                 [routeDict setValue:route_desc forKey:@"route_desc"];
                 [routeDict setValue:agency_name forKey:@"agency_name"];
                 [routeDict setValue:route_color forKey:@"route_color"];
-				[routeDict setValue:route_text_color forKey:@"route_text_color"];
+                [routeDict setValue:route_text_color forKey:@"route_text_color"];
                 [routes addObject:routeDict];
-				[routeDict release];		
+                [routeDict release];		
 				
-			}
+            }
 		} else {
 			NSLog(@"Problem preparing SQL statement.   Returned %d for database at %@.",ret, databasePath);
 		}
+        if (ret != 0) 
+        {
+            NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+        }
 		// Release the compiled statement from memory
 		sqlite3_finalize(compiledStatement);
 		sqlite3_close(database);
@@ -243,7 +642,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	} else {
 		NSLog(@"Problem opening the database at %@.", databasePath);	
 	}
-	
+	if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
 	return (routes);
 }
 
@@ -275,30 +677,31 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
         
         sqlite3_stmt *compiledStatement;
 		if((ret = sqlite3_prepare_v2(database, [sql cStringUsingEncoding:NSASCIIStringEncoding], -1, &compiledStatement, NULL)) == SQLITE_OK) {
-			// Loop through the results and add them to the feeds array
-			while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
-				// Read the data from the result row
-				stopDict = [[NSMutableDictionary alloc] init];
-				NSString* stop_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
-				NSString* stop_sequence = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
-				NSString* stop_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
-				NSString* stop_desc = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+            // Loop through the results and add them to the feeds array
+            while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
+                // Read the data from the result row
+                stopDict = [[NSMutableDictionary alloc] init];
+                NSString* stop_id = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
+                NSString* stop_sequence = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+                NSString* stop_name = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+                NSString* stop_desc = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
                 NSString* stop_lat = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 4)];
                 NSString* stop_lon = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 5)];
-				
-				[stopDict setValue:stop_id forKey:@"stop_id"];
-				[stopDict setValue:stop_sequence forKey:@"stop_sequence"];
+                
+                [stopDict setValue:stop_id forKey:@"stop_id"];
+                [stopDict setValue:stop_sequence forKey:@"stop_sequence"];
                 [stopDict setValue:stop_name forKey:@"stop_name"];
                 [stopDict setValue:stop_desc forKey:@"stop_desc"];
                 [stopDict setValue:stop_lat forKey:@"stop_lat"];
                 [stopDict setValue:stop_lon forKey:@"stop_lon"];
-				[stops addObject:stopDict];
-				[stopDict release];		
+                [stops addObject:stopDict];
+                [stopDict release];		
 				
-			}
+            }
 		} else {
 			NSLog(@"Problem preparing SQL statement.   Returned %d for database at %@.",ret, databasePath);
 		}
+        
 		// Release the compiled statement from memory
 		sqlite3_finalize(compiledStatement);
 		sqlite3_close(database);
@@ -306,7 +709,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	} else {
 		NSLog(@"Problem opening the database at %@.", databasePath);	
 	}
-	
+	if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
 	return (stops);
 }
 
@@ -343,7 +749,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	} else {
 		NSLog(@"Problem opening the database at %@.", databasePath);	
 	}
-	
+	if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
 	return (version);
 }
 
@@ -377,7 +786,10 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	} else {
 		NSLog(@"Problem opening the database at %@.", databasePath);	
 	}
-	
+	if (ret != 0) 
+    {
+        NSLog(@"error with sqlite %s", sqlite3_errmsg(database));
+    }
 	
 	NSURL *url = [[NSURL alloc] initWithString:WEB_SERVICE_DB_LAST_MODIFIED];
 	NSString* webDBLastModified = [[NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:nil] 
@@ -390,13 +802,13 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	//if ((localDBLastModified == nil) || ([localDBLastModified isEqualToString:webDBLastModified] == NO)) {
 	if ([localDBLastModified isEqualToString:webDBLastModified] == FALSE) {
 		NSLog(@"Updating local database which was last modified %@ with database from web which was modified on %@.", 
-				localDBLastModified, webDBLastModified);
+              localDBLastModified, webDBLastModified);
 		
 		// newer database file exists on the internet, so copy to local file system
 		NSData* sqliteData = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:WEB_SERVICE_DB_FILE]];
-	
+        
 		//[self performSelectorOnMainThread:@selector(displayImage:) withObject:image waitUntilDone:NO];
-	
+        
 		if ([sqliteData length] > 100) {
 			[sqliteData writeToFile:databasePath atomically:YES];
 		}
@@ -432,6 +844,26 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 	return (result);
 }
 
++ (NSString *)calculateDuration:(NSString *)startOn end:(NSString *)endOn {
+    
+    NSArray *parts = [startOn componentsSeparatedByString:@":"];
+    NSInteger startMinutes;
+    NSInteger endMinutes;
+    if ([parts count] >= 2) {
+        NSInteger hours   = [[parts objectAtIndex:0] integerValue];
+        NSInteger minutes = [[parts objectAtIndex:1] integerValue];
+        startMinutes = (hours*60) + minutes;
+    }
+    parts = [endOn componentsSeparatedByString:@":"];
+    if ([parts count] >= 2) {
+        NSInteger hours   = [[parts objectAtIndex:0] integerValue];
+        NSInteger minutes = [[parts objectAtIndex:1] integerValue];
+        endMinutes = (hours*60) + minutes;
+    }
+    endMinutes -= startMinutes;
+    return [DataSource minutesToNiceString:endMinutes];
+
+}
 
 ///
 /// Given time in minutes returns time string in nice format (e.g. 1 hour 10 minutes).
@@ -449,13 +881,13 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
         result = [NSString stringWithFormat:@"1 hour"];
         space = @" ";
     }
-   
+    
     
     if (remainingMinutes > 1) {
         result = [NSString stringWithFormat:@"%@%@%d minutes", result, space, remainingMinutes];
     } else if (remainingMinutes == 1) {
         result = [NSString stringWithFormat:@"%@%@1 minute", result, space];
-
+        
     }
     
 	return (result);
@@ -466,11 +898,11 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 + (NSString *)distancesFromLat:(double)fromLat andLon:(double)fromLon toLat:(double)toLat andLon:(double)toLon {
     
     NSString *result;
-   
+    
     CLLocation* fromLocation = [[CLLocation alloc] initWithLatitude:fromLat longitude:fromLon];
     CLLocation* toLocation = [[CLLocation alloc] initWithLatitude:toLat longitude:toLon];
     CLLocationDistance distance = [toLocation distanceFromLocation:fromLocation];
-
+    
     [fromLocation release];
     [toLocation release];
     
@@ -487,13 +919,37 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 		result = [NSString stringWithFormat:@"%1.1f miles", miles];
 	}
 	return (result);
-  
+    
+}
+
+/*
+ the database definition uses a column identifier to designate if a route is running on 
+ a given day e.g. where tuesday = 1 vs where tuesday = 0 which is somewhat a pain because
+ it requires us to run a block where clause where we pass in a 0/1 value for each day
+ of the week. This function encapsulates that logic returning back an array of 7 integers
+ of either 0 or 1 starting at 0 for Sunday - 6 for Saturday.
+ */
++(NSArray *)getDays {
+    NSMutableArray* days = [[[NSMutableArray alloc] init] autorelease];
+    return (NSArray *)(days);
 }
 
 
 
-
-
++(NSArray *)getDaysForDay {
+    NSMutableArray* days = [[[NSMutableArray alloc] init] autorelease];
+    NSCalendar *gregorian = [[[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar] autorelease];
+    NSDateComponents *comps = [gregorian components:NSWeekdayCalendarUnit fromDate:[NSDate date]];
+    int weekday = [comps weekday];
+    for (int index = 0; index < 7; index=index+1) {
+        if ((weekday-1) == index) {
+            [days addObject:[NSNumber numberWithInt:1]];
+        } else {
+            [days addObject:[NSNumber numberWithInt:0]];     
+        }
+    }
+    return (NSArray *)(days);
+}
 
 
 
@@ -510,7 +966,7 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
     {
         if (sharedInstance == nil) {
 			sharedInstance = [[DataSource alloc] init];
-		
+            
 		}
     }
     return sharedInstance;
@@ -520,7 +976,7 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
     self = [super init];
 	
     if ( self ) {
-     
+        
 		queue = [[NSOperationQueue alloc] init];
 		// Create instance of LocationManager and set self as the delegate
 		locationManager = [[CLLocationManager alloc] init];
@@ -529,15 +985,15 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 		//[locationManager startMonitoringSignificantLocationChanges];
 		[locationManager startUpdatingLocation];
 		
-	
+        ///Users/russellsimpkins/Library/Application Support/iPhone Simulator/4.3.2/Applications/BC4E35CD-6AF2-4CA1-9508-98919B750EA2/Documents/mta.sqlite
 		// load data from the database
-		databaseName = @"nexttrainhome.sqlite";
+		databaseName = @"mta.sqlite";
 		// Get the path to the documents directory and append the databaseName
 		NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 		NSString *documentsDir = [documentPaths objectAtIndex:0];
 		databasePath = [[documentsDir stringByAppendingPathComponent:databaseName] retain];
-		
-
+		NSLog(@"databasePath = %@",databasePath);
+        
 		// Use File Manager to check if the SQL database has already been saved to the user's phone, if not then copy it over from bundle
 		NSFileManager *fileManager = [[NSFileManager alloc] init];
 		BOOL success = [fileManager fileExistsAtPath:databasePath];
@@ -549,11 +1005,11 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 			
 			// Copy the database from the package to the users filesystem
 			[fileData writeToFile:databasePath atomically:YES];
-		
+            
 			//[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
 		}
 		[fileManager release];
- 
+        
         
     }
 	
@@ -563,25 +1019,25 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 // called by App Delegate when application becomes active.
 - (void)applicationDidBecomeActive {
 	
-
+    
 	
 	
 	//[locationManager startMonitoringSignificantLocationChanges];
 	[locationManager startUpdatingLocation];
 	
 	/*	
-	NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
-										initWithTarget:self
-										selector:@selector(updateDatabaseFromWebIfNewer) 
-										object:nil];
-	[queue addOperation:operation]; 
-	[operation release];
+     NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
+     initWithTarget:self
+     selector:@selector(updateDatabaseFromWebIfNewer) 
+     object:nil];
+     [queue addOperation:operation]; 
+     [operation release];
      */
 }
 
 // called by App Delegate when application enters background.
 - (void)applicationDidEnterBackground {
-
+    
 	// XXX: stop location manager
 	if (locationManager != nil) {
 		//[locationManager stopMonitoringSignificantLocationChanges];
@@ -628,7 +1084,7 @@ static NSString *WEB_SERVICE_DB_FILE = @"http://www.souldoubtprod.com/nexttrainh
 		   fromLocation:(CLLocation *)oldLocation
 {
 	NSLog(@"locationManager:didUpdateToLocation: %f, %f", newLocation.coordinate.latitude, newLocation.coordinate.longitude);
-
+    
 	if (currentLocation != newLocation) {
 		if (currentLocation != nil) {
 			[currentLocation release];

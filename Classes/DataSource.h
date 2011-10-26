@@ -24,38 +24,39 @@ alpha:((c)&0xFF)/255.0];
 	
 	NSString* databaseName;
 	NSString* databasePath;
-
 	CLLocationManager *locationManager;
 	CLLocation *currentLocation;
 	bool updateLocation;
-	
 	NSOperationQueue *queue; 
+
 }
-
-
 @property (retain) CLLocationManager *locationManager;
 @property (retain) CLLocation *currentLocation;  // don't make nonatomic because updated in thread
 
-
 + (DataSource*)sharedInstance;
-
 -(void) updateDatabaseFromWebIfNewer;
-
-
-- (void)applicationDidBecomeActive;
-- (void)applicationDidEnterBackground;
-
-
--(NSArray*) getNextTrainsFrom: (int)fromStopId to: (int)toStopId withDirection: (int)directionId onDay: (NSString*)day afterHour: (int)hour;
--(NSArray*) getRoutes;
--(NSArray*) getRouteStops:(NSString*) route_id;
-
-
+-(void) applicationDidBecomeActive;
+-(void) applicationDidEnterBackground;
+-(NSArray *) getNextTrainsFrom: (int)fromStopId to: (int)toStopId withDirection: (int)directionId onDay: (NSString *)day afterHour: (int)hour;
+-(NSArray *)getRoutes;
+-(NSArray *)getRouteStops:(NSString*) route_id;
+-(NSArray *)getAllStops;
+-(void)setHomeStop:(NSNumber *)homeStopId;
+-(void)setWorkStop:(NSNumber *)workStopId;
+-(NSDictionary *)getHomeStop;
+-(NSDictionary *)getWorkStop;
+-(NSString *)getSql:(NSString *)name;
 -(void) calculateStopsDistancesFrom:(CLLocation *)location;
+-(NSNumber *)getHomeStopId;
+-(NSNumber *)getWorkStopId;
+-(NSArray *)getHomeStops;
+-(NSArray *)getWorkStops;
 
 + (NSString *)timeToNiceString:(NSString*)time;
 + (NSString *)minutesToNiceString:(NSInteger)minutes;
++ (NSString *)calculateDuration:(NSString *)startOn end:(NSString *)endOn;
 + (NSString *)distancesFromLat:(double)fromLat andLon:(double)fromLon toLat:(double)toLat andLon:(double)toLon;
-
++ (NSArray *)getDays;
++(NSArray *)getDaysForDay;
 
 @end

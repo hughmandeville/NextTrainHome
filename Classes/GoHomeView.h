@@ -11,6 +11,9 @@
 
 @interface GoHomeView : UITableViewController {
     NSArray *trains;
+    UITableView *homeTableView;
 }
+-(void)loadData;
 
+@property (nonatomic,retain) IBOutlet UITableView *homeTableView;
 @end

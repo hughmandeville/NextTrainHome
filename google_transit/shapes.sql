@@ -6,3 +6,4 @@ shape_pt_lat float default 0,
 shape_pt_lon float default 0,
 shape_pt_seq int default 0
 );
+create index shape_shapeid_idx on shape('shape_id');

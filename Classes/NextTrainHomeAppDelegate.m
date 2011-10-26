@@ -13,6 +13,15 @@
 @synthesize window;
 @synthesize tabController;
 
+-(IBAction)refreshView:(id)sender
+{
+    NSLog(@"refresh views called.");
+    /*
+    NSArray *views = [[self tabController] viewControllers];
+    for (int index = 0; index < [views count]; ++index) {
+        UIViewController *aview = [views objectAtIndex:index];
+    }*/
+}
 #pragma mark -
 #pragma mark Application lifecycle
 

@@ -8,9 +8,10 @@
 
 #import "GoToWorkView.h"
 #import "StopTimeCellView.h"
+#import "DataSource.h"
 
 @implementation GoToWorkView
-
+@synthesize workTableView;
 
 #pragma mark -
 #pragma mark Initialization
@@ -42,14 +43,22 @@
     UIImageView *imageView = [[UIImageView alloc] initWithImage: image];	
     self.navigationItem.titleView = imageView;
     [imageView release];
+
+}
+
+-(void)loadData
+{
+    DataSource *dataSource = [DataSource sharedInstance];
+    trains = [[dataSource getWorkStops] retain];
 }
 
 
-/*
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self loadData];
+    [workTableView reloadData];
 }
-*/
+
 /*
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
@@ -85,7 +94,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    return 10;
+    return [trains count];
 }
 
 
@@ -103,6 +112,22 @@
 			}
 		}
 	}
+    
+    NSDictionary *train = [trains objectAtIndex:indexPath.row];
+    
+    
+    cell.fromTimeLabel.text = [DataSource timeToNiceString:[train objectForKey:@"departs"]];
+    cell.toTimeLabel.text   = [DataSource timeToNiceString:[train objectForKey:@"arrives"]];
+    cell.fromStopLabel.text = [train objectForKey:@"work"];
+    cell.toStopLabel.text   = [train objectForKey:@"home"];
+    cell.distanceLabel.text = [DataSource distancesFromLat:[[train objectForKey:@"from_lat"] doubleValue]
+                                                    andLon:[[train objectForKey:@"from_lon"] doubleValue] 
+                                                     toLat:[[train objectForKey:@"to_lat"] doubleValue]  
+                                                    andLon:[[train objectForKey:@"to_lon"] doubleValue]];
+    cell.routeLabel.text    = [train objectForKey:@"route_long_name"];
+    cell.agencyLabel.text   = [train objectForKey:@"agency_name"];
+    cell.headsignLabel.text = [train objectForKey:@"trip_headsign"];
+    cell.durationLabel.text = [DataSource calculateDuration:[train objectForKey:@"departs"] end:[train objectForKey:@"arrives"]];
 	//NSDictionary* document = [self.documents objectAtIndex:indexPath.row];
 	//cell.title.text = [document valueForKey:@"title"];
 	

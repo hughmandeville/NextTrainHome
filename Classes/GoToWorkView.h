@@ -10,7 +10,9 @@
 
 
 @interface GoToWorkView : UITableViewController {
-
+    NSArray *trains;
+    UITableView *workTableView;
 }
-
+@property (nonatomic,retain) IBOutlet UITableView *workTableView;
+-(void)loadData;
 @end

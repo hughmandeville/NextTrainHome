@@ -40,7 +40,7 @@ File.open("#{input[0]}.txt",'r').each do |f|
   when "calendar_dates"
     output.puts "insert into calendar_date (service_id,date,exception_type) values (#{line[0]},'#{line[1]}',#{line[2].chomp});"
   when "routes"
-    output.puts "insert into route (route_id, route_short_name, route_long_name, route_desc, route_type) values (#{line[0]},'#{line[1].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[2].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[3].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}',#{line[4].chomp});"
+    output.puts "insert into route (route_id, route_short_name, route_long_name, route_desc, route_type,route_url,route_color,route_text_color) values (#{line[0]},'#{line[1].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[2].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[3].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}',#{line[4].chomp},'#{line[5].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[6].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''")}','#{line[7].gsub(/^ /,'').gsub(/ $/,'').gsub(/'/,"''").chomp}');"
   when "shapes"
     output.puts "insert into shape (shape_id, shape_pt_lat, shape_pt_lon, shape_pt_seq) values (#{line[0]},#{line[1]},#{line[2]},#{line[3].chomp});"
   when "stops"

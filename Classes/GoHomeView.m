@@ -11,7 +11,7 @@
 #import "DataSource.h"
 
 @implementation GoHomeView
-
+@synthesize homeTableView;
 
 #pragma mark -
 #pragma mark Initialization
@@ -44,19 +44,24 @@
     self.navigationItem.titleView = imageView;
     [imageView release];
     
-    DataSource *dataSource = [DataSource sharedInstance];
     
-	trains = [[dataSource getNextTrainsFrom: 1 to: 140 withDirection: 0 onDay: @"monday" afterHour: 2] retain];
-
     
 }
 
+-(void)loadData
+{
+    DataSource *dataSource = [DataSource sharedInstance];
+    trains = [[dataSource getHomeStops] retain];
+}
 
-/*
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    NSLog(@"will appear called");
+    [self loadData];
+    [homeTableView reloadData];
 }
-*/
+
 /*
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
@@ -114,27 +119,26 @@
     NSDictionary *train = [trains objectAtIndex:indexPath.row];
     
     
-    cell.fromTimeLabel.text = [DataSource timeToNiceString:[train objectForKey:@"departure_time"]];
-    cell.toTimeLabel.text = [DataSource timeToNiceString:[train objectForKey:@"arrival_time"]];
-    cell.fromStopLabel.text = [train objectForKey:@"from_name"];
-    cell.toStopLabel.text = [train objectForKey:@"to_name"];
-    cell.routeLabel.text = [train objectForKey:@"route_long_name"];
-    cell.agencyLabel.text = [train objectForKey:@"agency_name"];
-    cell.headsignLabel.text = [train objectForKey:@"trip_headsign"];
-    cell.durationLabel.text = [DataSource minutesToNiceString:[[train objectForKey:@"trip_time"] integerValue]];   
+    cell.fromTimeLabel.text = [DataSource timeToNiceString:[train objectForKey:@"departs"]];
+    cell.toTimeLabel.text   = [DataSource timeToNiceString:[train objectForKey:@"arrives"]];
+    cell.fromStopLabel.text = [train objectForKey:@"work"];
+    cell.toStopLabel.text   = [train objectForKey:@"home"];
     cell.distanceLabel.text = [DataSource distancesFromLat:[[train objectForKey:@"from_lat"] doubleValue]
                                                     andLon:[[train objectForKey:@"from_lon"] doubleValue] 
                                                      toLat:[[train objectForKey:@"to_lat"] doubleValue]  
                                                     andLon:[[train objectForKey:@"to_lon"] doubleValue]];
+    cell.routeLabel.text    = [train objectForKey:@"route_long_name"];
+    cell.agencyLabel.text   = [train objectForKey:@"agency_name"];
+    cell.headsignLabel.text = [train objectForKey:@"trip_headsign"];
+    cell.durationLabel.text = [DataSource calculateDuration:[train objectForKey:@"departs"] end:[train objectForKey:@"arrives"]];
+    /*
     NSString *colorStr = [NSString stringWithFormat:@"0x%@ff", [train objectForKey:@"route_color"]];
     unsigned int colorValue;
     NSScanner *scanner = [NSScanner scannerWithString:colorStr];
     [scanner scanHexInt:&colorValue];
     cell.routeLabel.textColor = HEXCOLOR(colorValue);
-    
-	
-	 
-	return cell;	
+     */
+    return cell;	
 	
 }
 

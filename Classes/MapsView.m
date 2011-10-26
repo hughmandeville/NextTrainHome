@@ -48,9 +48,15 @@
 	
 	// Populate maps array from plist.
     NSString *path = [[NSBundle mainBundle] pathForResource:@"Maps" ofType:@"plist"];
-    NSArray* tempArray = [[NSArray alloc] initWithContentsOfFile:path];	
+    NSArray* tempArray = [[NSArray alloc] initWithContentsOfFile:path];
     self.maps = tempArray;
-    [tempArray release];	
+    
+    path = [[NSBundle mainBundle] pathForResource:@"SQLStatements" ofType:@"plist"];
+    NSDictionary* dict = [NSDictionary dictionaryWithContentsOfFile:path];
+    NSString *mySql = [dict objectForKey:@"getHomeSql"];
+    NSLog(@"We have %@", mySql);
+    
+    [tempArray release];
 }
 
 

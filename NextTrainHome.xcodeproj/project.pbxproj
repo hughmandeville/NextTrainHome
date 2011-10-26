@@ -12,7 +12,6 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
-		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
 		3E0362E31327ADBE00E5AFEF /* Maps.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0362E11327ADBE00E5AFEF /* Maps.png */; };
 		3E0362E41327ADBE00E5AFEF /* Routes.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E0362E21327ADBE00E5AFEF /* Routes.png */; };
 		3E18A43C13290E1A00134ACA /* lirr_map.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E18A43913290E1A00134ACA /* lirr_map.png */; };
@@ -47,6 +46,10 @@
 		3ECC9051134E7E4300991E8C /* RouteCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3ECC9050134E7E4300991E8C /* RouteCellView.m */; };
 		3ECC9053134E7F1A00991E8C /* RouteCellView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3ECC9052134E7F1A00991E8C /* RouteCellView.xib */; };
 		3ECC9055134E982200991E8C /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3ECC9054134E982200991E8C /* QuartzCore.framework */; };
+		783ECC63141A4BFD00298E21 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 783ECC62141A4BFD00298E21 /* MainWindow.xib */; };
+		787C352F14181B6500A994C3 /* SQLStatements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 787C352E14181B6500A994C3 /* SQLStatements.plist */; };
+		787C3541141825BF00A994C3 /* SelectHomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 787C353F141825BE00A994C3 /* SelectHomeView.m */; };
+		787C3542141825BF00A994C3 /* SelectHomeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 787C3540141825BE00A994C3 /* SelectHomeView.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,7 +59,6 @@
 		1D6058910D05DD3D006BFB54 /* NextTrainHome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NextTrainHome.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		28AD733E0D9D9553002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* NextTrainHome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NextTrainHome_Prefix.pch; sourceTree = "<group>"; };
 		3E0362E11327ADBE00E5AFEF /* Maps.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Maps.png; sourceTree = "<group>"; };
@@ -105,6 +107,11 @@
 		3ECC9050134E7E4300991E8C /* RouteCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteCellView.m; sourceTree = "<group>"; };
 		3ECC9052134E7F1A00991E8C /* RouteCellView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = RouteCellView.xib; sourceTree = "<group>"; };
 		3ECC9054134E982200991E8C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		783ECC62141A4BFD00298E21 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
+		787C352E14181B6500A994C3 /* SQLStatements.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = SQLStatements.plist; sourceTree = "<group>"; };
+		787C353E141825BE00A994C3 /* SelectHomeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SelectHomeView.h; sourceTree = "<group>"; };
+		787C353F141825BE00A994C3 /* SelectHomeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SelectHomeView.m; sourceTree = "<group>"; };
+		787C3540141825BE00A994C3 /* SelectHomeView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = SelectHomeView.xib; path = Classes/SelectHomeView.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* NextTrainHome-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "NextTrainHome-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -153,6 +160,8 @@
 				3EB766A6132BD0FA00605BE7 /* StopsView.m */,
 				3E556A8613266DE00092228B /* StopTimeCellView.h */,
 				3E556A8713266DE00092228B /* StopTimeCellView.m */,
+				787C353E141825BE00A994C3 /* SelectHomeView.h */,
+				787C353F141825BE00A994C3 /* SelectHomeView.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -236,6 +245,7 @@
 				3E55699113249EF20092228B /* DistributionEntitlements.plist */,
 				3E18A44B1329107B00134ACA /* Maps.plist */,
 				8D1107310486CEB800E47090 /* NextTrainHome-Info.plist */,
+				787C352E14181B6500A994C3 /* SQLStatements.plist */,
 			);
 			name = PLists;
 			sourceTree = "<group>";
@@ -243,8 +253,9 @@
 		3E5569DD1324B0C60092228B /* XIBs */ = {
 			isa = PBXGroup;
 			children = (
+				783ECC62141A4BFD00298E21 /* MainWindow.xib */,
+				787C3540141825BE00A994C3 /* SelectHomeView.xib */,
 				3EBB64B11352767C0097F1BD /* DestinationView.xib */,
-				28AD733E0D9D9553002E5188 /* MainWindow.xib */,
 				3E556A8913266F230092228B /* StopTimeCellView.xib */,
 				3EB766A7132BD0FA00605BE7 /* StopsView.xib */,
 				3E18A4751329128800134ACA /* WebView.xib */,
@@ -302,7 +313,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */,
 				3E55699613249F3E0092228B /* Default.png in Resources */,
 				3E55699713249F3E0092228B /* Icon.png in Resources */,
 				3E55699813249F3E0092228B /* iTunesArtwork in Resources */,
@@ -322,6 +332,9 @@
 				3EB766A9132BD0FB00605BE7 /* StopsView.xib in Resources */,
 				3ECC9053134E7F1A00991E8C /* RouteCellView.xib in Resources */,
 				3EBB64B31352767C0097F1BD /* DestinationView.xib in Resources */,
+				787C352F14181B6500A994C3 /* SQLStatements.plist in Resources */,
+				787C3542141825BF00A994C3 /* SelectHomeView.xib in Resources */,
+				783ECC63141A4BFD00298E21 /* MainWindow.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -345,6 +358,7 @@
 				3EB766A8132BD0FB00605BE7 /* StopsView.m in Sources */,
 				3ECC9051134E7E4300991E8C /* RouteCellView.m in Sources */,
 				3EBB64B21352767C0097F1BD /* DestinationView.m in Sources */,
+				787C3541141825BF00A994C3 /* SelectHomeView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
